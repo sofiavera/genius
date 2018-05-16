@@ -13,10 +13,11 @@ TOKEN = sys.argv[1]
 class Genius_Client():
     def get_singer(self, choice):
         headers = {"Authorization": "Bearer " + TOKEN }
-
         conn = http.client.HTTPSConnection("api.genius.com")
+
         url = "/search?q=" + choice
         conn.request("GET", url , None, headers)
+
         r1 = conn.getresponse()
         print(r1.status, r1.reason)
         res_raw = r1.read().decode("utf-8")
@@ -24,6 +25,7 @@ class Genius_Client():
 
         singer = json.loads(res_raw)
         return singer
+
     def get_id(self, singer):
         try:
             for i in singer['response']['hits']:
@@ -35,16 +37,18 @@ class Genius_Client():
             self.wfile.write(bytes(message, "utf8"))
 
         return id
+
     def get_url(self, id):
         headers = {"Authorization": "Bearer " + TOKEN}
-
         conn = http.client.HTTPSConnection("api.genius.com")
+
         url = "/artists/" + id + "/songs?per_page=30&page=1"
         conn.request("GET", url, None, headers)
+
         r1 = conn.getresponse()
-        print(r1.status, r1.reason)
         res_raw = r1.read().decode("utf-8")
         conn.close()
+
         data = json.loads(res_raw)
         return data
 
@@ -66,6 +70,7 @@ parser = Genius_Parser()
 
 class Genius_HTML():
     def write_data(self, list):
+
         with open('songs.html', 'w') as f:
             f.write ("<!doctype html>" + "<html>" + "<body>" + "<ul>")
             for song in list:
@@ -74,7 +79,7 @@ class Genius_HTML():
                     f.write("<img align='left' height='50' width='50' src=' " + song['header_image_thumbnail_url'] + "'>")
                 else:
                     f.write('(Album photo not found)')
-                f.write("<a href='" + song['url'] + "'>" + "<h2>" + song['title'] + "</h2></a></li>")
+                f.write("<a href='" + song['url'] + "'>" + song['title'] + "</a></li>")
             f.write ("</ul>" + "</body>" + "</html>")
 
         with open('songs.html', 'r') as f:
