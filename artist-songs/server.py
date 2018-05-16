@@ -19,7 +19,6 @@ class Genius_Client():
         conn.request("GET", url , None, headers)
 
         r1 = conn.getresponse()
-        print(r1.status, r1.reason)
         res_raw = r1.read().decode("utf-8")
         conn.close()
 
