@@ -27,7 +27,7 @@ class Genius_Client():
     def get_id(self, singer):
         try:
             for i in singer['response']['hits']:
-                id = i['result']['primary_artist']['id']
+                id = str(i['result']['primary_artist']['id'])
                 break
         except KeyError:
             with open("not_found.html") as f:
@@ -61,28 +61,27 @@ class Genius_Parser():
             self.wfile.write(bytes(message, "utf8"))
 
         return list
+
+parser = Genius_Parser()
+
 class Genius_HTML():
     def write_data(self, list):
-        html_file = "<body style='background-color:#ffff64;'>"
-        html_file += "<font face = ""Arial"">"
-        html_file += "<a href=""http://localhost:8000/"">Back to Main Page</a></p>"
-        html_file += '</head><body><h1>Songs found of the requested singer/band</h1>'
-        for song in song_list:
-            html_file += "<li>"
-            if song['header_image_thumbnail_url'].find('default cover'):
-                html_file += "<img align='left' height='50' width='50' src=' " + song[
-                    'header_image_thumbnail_url'] + "'>"
-            else:
-                html_file += '(Album photo not found)'
+        with open('songs.html', 'w') as f:
+            f.write ("<!doctype html>" + "<html>" + "<body>" + "<ul>")
+            for song in list:
+                f.write("<li>")
+                if song['header_image_thumbnail_url'].find('default cover'):
+                    f.write("<img align='left' height='50' width='50' src=' " + song['header_image_thumbnail_url'] + "'>")
+                else:
+                    f.write('(Album photo not found)')
+                f.write("<a href='" + song['url'] + "'>" + "<h2>" + song['title'] + "</h2></a></li>")
+            f.write ("</ul>" + "</body>" + "</html>")
 
-            html_file += "<a href='" + song['url'] + "'>" + "<h2>" + song['title'] + "</h2></a></li>"
-        html_file += "</body></html>"
+        with open('songs.html', 'r') as f:
+            file = f.read()
+        return file
 
-        return html_file
-
-
-
-
+HTML = Genius_HTML()
 
 class Handler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
@@ -105,8 +104,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 singer = client.get_singer(choice)
                 id = client.get_id(singer)
                 data = client.get_url(id)
-
-
+                list = parser.get_data(data)
+                file = HTML.write_data(list)
+                self.wfile.write(bytes(file, "utf8"))
 
         except KeyError:
             self.send_response(404)
